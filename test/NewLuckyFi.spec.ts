@@ -5,14 +5,14 @@ import {Wallet, BigNumber} from 'ethers'
 import {newLuckyFiFixture} from './shared/fixtures'
 import {LuckyMetaToken} from '../typechain/LuckyMetaToken'
 import {NewLuckyNft} from '../typechain/NewLuckyNft'
-import {NewLuckyFi} from '../typechain/NewLuckyFi'
+import {NewLuckyFinanceUpgradeable} from '../typechain/NewLuckyFinanceUpgradeable'
 const ten = BigNumber.from(10)
 describe("NewLuckyFi", () => {
     let user1: SignerWithAddress, user2: SignerWithAddress
     let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
     let lmt: LuckyMetaToken
     let nft: NewLuckyNft
-    let fi: NewLuckyFi
+    let fi: NewLuckyFinanceUpgradeable
     const ten = BigNumber.from(10);
     before("create fixture loadder", async() => {
         [user1, user2] = await ethers.getSigners()
@@ -70,6 +70,7 @@ describe("NewLuckyFi", () => {
 
     it('test getBounds', async () => {
         await nft.safeMint(user1.address, 1)
+        await nft.safeMint(user1.address, 3)
         await fi.batchLinkNft()
       
 
@@ -77,15 +78,16 @@ describe("NewLuckyFi", () => {
         await fi.connect(user2).batchLinkNft()
 
         await fi.depositeNft(1)
+        await fi.depositeNft(3)
         await fi.connect(user2).depositeNft(2)
 
-        expect(await fi.totalHashToken()).to.be.equal(ten.pow(8).mul(2))
+        expect(await fi.totalHashToken()).to.be.equal(ten.pow(8).mul(3))
         let now = parseInt((new Date().getTime() / 1000) + "")
         let l = now + 10
         while(now <= l) {
             now = parseInt((new Date().getTime() / 1000) + "")
         }
-        await nft.safeMint(user2.address, 3)
+        await nft.safeMint(user2.address,  100)
         console.info(await fi.showExpBonus())
         console.info(await fi.connect(user2).showExpBonus())
     })

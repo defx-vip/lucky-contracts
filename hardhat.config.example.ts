@@ -1,7 +1,8 @@
 import 'hardhat-typechain'
 import '@nomiclabs/hardhat-ethers'
 import '@nomiclabs/hardhat-waffle'
-
+import '@openzeppelin/hardhat-upgrades'
+import "@nomiclabs/hardhat-etherscan";
 
 //0xba81a135Df6D1b02386203F2ebA394c28805B497
 export default {
@@ -38,7 +39,7 @@ export default {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {},
   },
   solidity: {
     compilers: [    

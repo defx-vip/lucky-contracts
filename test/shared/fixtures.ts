@@ -6,8 +6,8 @@ import {LuckyTicket} from '../../typechain/LuckyTicket'
 import {LuckyTicketFactory} from '../../typechain/LuckyTicketFactory'
 import {NewLuckyNft} from '../../typechain/NewLuckyNFT'
 import {NewLuckyNftFactory} from '../../typechain/NewLuckyNftFactory'
-import {NewLuckyFi} from '../../typechain/NewLuckyFi'
-import {NewLuckyFiFactory} from '../../typechain/NewLuckyFiFactory'
+import {NewLuckyFinanceUpgradeable} from '../../typechain/NewLuckyFinanceUpgradeable'
+import {NewLuckyFinanceUpgradeableFactory} from '../../typechain/NewLuckyFinanceUpgradeableFactory'
 
 interface LuckyMetaTokenFixture {
     token : LuckyMetaToken
@@ -48,7 +48,7 @@ export async function luckyNewLuckyNftFixture(): Promise<NewLuckyNftFixture> {
 interface NewLuckyFiFixture {
     token : LuckyMetaToken,
     newLuckyNft: NewLuckyNft,
-    newLuckyFi: NewLuckyFi,
+    newLuckyFi: NewLuckyFinanceUpgradeable,
     
 }
 
@@ -56,7 +56,7 @@ export async function newLuckyFiFixture(): Promise<NewLuckyFiFixture> {
     let signers = await ethers.getSigners()
     const tokenFix = await luckyMetaTokenFixture()
     const nftFix = await luckyNewLuckyNftFixture()
-    const factory = new NewLuckyFiFactory(signers[0])
+    const factory = new NewLuckyFinanceUpgradeableFactory(signers[0])
     const newLuckyFi = await factory.deploy()
     await newLuckyFi.initialize(tokenFix.token.address, nftFix.newLuckyNft.address)
     return {

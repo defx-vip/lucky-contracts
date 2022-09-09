@@ -9,7 +9,7 @@ describe("LuckyMetaToken", () => {
     let user1: SignerWithAddress
     let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
     let lmt: LuckyMetaToken
-    const ten = BigNumber.from(10);
+    const ten = BigNumber.from(10)
     before("create fixture loadder", async() => {
         let [owner] = await ethers.getSigners()
         user1 = owner

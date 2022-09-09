@@ -13,23 +13,22 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
 
     using SafeMathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
-        
-    uint256 public  CHANGE_POWER_SIZE; //更改算力次数
-    uint256 public  SUPPORT_STAKING_MAX_ID; //支持质押的nft最大ID 
+    
+    uint256 public  CHANGE_POWER_SIZE;
+    uint256 public  stakingMaxId; 
     uint256 public  alpha;
-    uint256 private BONUS_PERIOD ;
-    uint256 private UNIT;
+    uint256 public BONUS_PERIOD ;
+    uint256 public UNIT;
 
     uint256[9] lmtCostByLevel;
     
-    uint256 private BONUS_PER_DAY; // 固定每日分红
-    uint256 private extraBonus; // 额外分红
+    uint256 private BONUS_PER_DAY; 
+    uint256 private extraBonus; 
 
     address private DEAD;
     address private feeOwner;
     uint256 private feeRate;
 
-    // 等价兑换算力
     uint256 private THRESHOLD; 
     uint256 public totalHashToken;
    
@@ -57,22 +56,24 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
     INft private nft;
 
     event Levelup(uint256 indexed personId, uint256 indexed newLevel, uint256 goldCost);
+    event LinkNftEvent(uint256 indexed tokenId, address indexed user);
 
     constructor() {}
 
     function initialize(address _LMT,address _LuckyNFT) public initializer   {
+        UNIT = 1e8;
         lmt = IERC20Upgradeable(_LMT);
         nft = INft(_LuckyNFT);
         THRESHOLD = 10000 * UNIT;
-        CHANGE_POWER_SIZE = 1;
-        SUPPORT_STAKING_MAX_ID = 70000;
+        CHANGE_POWER_SIZE = 7;
+        stakingMaxId = 70000;
         alpha =  4 weeks;
         BONUS_PERIOD = 1 days;
-        UNIT = 1e8;
         lmtCostByLevel = [150, 350, 800, 2700, 6000, 10000, 30000, 50000, 100000];
         BONUS_PER_DAY = 1826484 * 1e16;
         DEAD = 0x000000000000000000000000000000000000dEaD;
         feeOwner= 0xE44C1d1aAAc32941BDB820801DAcf7C27e3b7F47;
+        __Ownable_init();
         feeRate = 50;
     }
 
@@ -142,6 +143,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         luckyNfts[_tokenId].startTime = nft.nftStartTime(_tokenId);
         luckyNfts[_tokenId].isLink = true;
         luckyNfts[_tokenId].realOwner = msg.sender;
+        emit LinkNftEvent(_tokenId, msg.sender);
     }
 
 
@@ -174,7 +176,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
     function depositeNft(uint256 _tokenId) public {
         require(nft.ownerOf(_tokenId) == msg.sender, "LuckyFi: caller is not owner of target nft.");
         require(luckyNfts[_tokenId].isLink, "LuckyFi: nft is not linked.");
-        require(_tokenId <= SUPPORT_STAKING_MAX_ID, "LuckyFi: Not suppoert this nft");
+        require(_tokenId <= stakingMaxId, "LuckyFi: Not suppoert this nft");
         nft.safeTransferFrom(msg.sender, address(this), _tokenId);
         luckyNfts[_tokenId].depositeTime = block.timestamp;
         luckyNfts[_tokenId].realOwner = msg.sender;
@@ -283,7 +285,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         }
     }
 
-    function userHashToken(address _user) internal view returns (uint256) {
+    function userHashToken(address _user) public view returns (uint256) {
         uint256[] memory _ids = users[_user].depositeIds;
         uint256 _userHash;
         for (uint256 i = 0; i < _ids.length; i++) {
@@ -294,7 +296,6 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         }
         return _userHash;
     }
-
 
     function userHashRatio(address _user) internal view returns (uint256) {
         uint256 _ratio;
@@ -368,5 +369,19 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
 
     function setBonusPerDay(uint256 bonusPerDay) external onlyOwner {
         BONUS_PER_DAY = bonusPerDay;
+    }
+
+    function userTotalHashToken(address _user) public view returns (uint256) {
+        uint256[] memory _ids = users[_user].depositeIds;
+        uint256 _userHash;
+        for (uint256 i = 0; i < _ids.length; i++) {
+            uint256 _id = _ids[i];
+            _userHash += hashFactor(_id);
+        }
+        return _userHash;
+    }
+
+    function setStakingMaxId(uint256 _stakingMaxId) external onlyOwner {
+        stakingMaxId = _stakingMaxId;
     }
 }

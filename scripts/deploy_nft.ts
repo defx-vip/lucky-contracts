@@ -1,5 +1,5 @@
 import {ethers, upgrades } from 'hardhat'
-const lmtAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+const lmtAddress = "0xB8bDB98AF8C987336B9476Fd8a98BdF190b6f10E"
 async function main() {
     const NewLuckyNFT = await ethers.getContractFactory('NewLuckyNFT')
     console.log("Deploying NFT.....")
