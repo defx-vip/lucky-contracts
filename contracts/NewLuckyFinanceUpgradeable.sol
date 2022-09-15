@@ -16,24 +16,26 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
     
     uint256 public  CHANGE_POWER_SIZE;
     uint256 public  stakingMaxId; 
-    uint256 public  alpha;
     uint256 public BONUS_PERIOD ;
     uint256 public UNIT;
+    uint256 public totalHashToken;
+    uint256 private BONUS_PER_DAY; 
+    uint256 private extraBonus; 
+    uint256 private THRESHOLD; 
+    
 
     uint256[9] lmtCostByLevel;
     
-    uint256 private BONUS_PER_DAY; 
-    uint256 private extraBonus; 
-
-    address private DEAD;
     address private feeOwner;
-    uint256 private feeRate;
 
-    uint256 private THRESHOLD; 
-    uint256 public totalHashToken;
-   
+    mapping(uint256 => LuckyNft) public luckyNfts;
+    mapping(address => User) public users;
+    
+    IERC20Upgradeable public lmt;
+    INft public nft;
+
     struct LuckyNft {
-        uint256 startTime;
+        uint256 linkTime;
         uint256 lastHash;
         uint256 level;
         uint256 rarity;
@@ -49,12 +51,6 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         mapping(uint256 => bool) bonusDone; // time => true/false
     }
 
-    mapping(uint256 => LuckyNft) private luckyNfts;
-    mapping(address => User) private users;
-    
-    IERC20Upgradeable private lmt;
-    INft private nft;
-
     event Levelup(uint256 indexed personId, uint256 indexed newLevel, uint256 goldCost);
     event LinkNftEvent(uint256 indexed tokenId, address indexed user);
 
@@ -67,14 +63,11 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         THRESHOLD = 10000 * UNIT;
         CHANGE_POWER_SIZE = 7;
         stakingMaxId = 70000;
-        alpha =  4 weeks;
         BONUS_PERIOD = 1 days;
         lmtCostByLevel = [150, 350, 800, 2700, 6000, 10000, 30000, 50000, 100000];
         BONUS_PER_DAY = 1826484 * 1e16;
-        DEAD = 0x000000000000000000000000000000000000dEaD;
         feeOwner= 0xE44C1d1aAAc32941BDB820801DAcf7C27e3b7F47;
         __Ownable_init();
-        feeRate = 50;
     }
 
     // ================ Display Methods ================
@@ -140,7 +133,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
     function _linkNft(uint256 _tokenId) internal {
         luckyNfts[_tokenId].level = 1;
         luckyNfts[_tokenId].rarity = nft.showRarity(_tokenId);
-        luckyNfts[_tokenId].startTime = nft.nftStartTime(_tokenId);
+        luckyNfts[_tokenId].linkTime = block.timestamp;
         luckyNfts[_tokenId].isLink = true;
         luckyNfts[_tokenId].realOwner = msg.sender;
         emit LinkNftEvent(_tokenId, msg.sender);
@@ -194,7 +187,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
 
 
     function _getBonus(address _user, uint256 _amount) internal {
-        uint256 fee = _amount.mul(feeRate).div(1000);
+        uint256 fee = _amount.mul(50).div(1000);
         lmt.safeTransfer(feeOwner, fee);    
         lmt.safeTransfer(_user, _amount.sub(fee));      
         users[_user].bonusDone[block.timestamp / BONUS_PERIOD] = true;
@@ -270,7 +263,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         } else if (luckyNfts[_tokenId].rarity == 2) {
             _factor = _level * _level * UNIT + (_level - 1) * UNIT;
         }
-        uint256 x = (block.timestamp - luckyNfts[_tokenId].startTime) / alpha;
+        uint256 x = (block.timestamp - luckyNfts[_tokenId].linkTime) / 4 weeks;
         if (x > CHANGE_POWER_SIZE) x = CHANGE_POWER_SIZE;
         return _factor / 2**x;
     }
@@ -343,11 +336,6 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         feeOwner = _newFeeOwner;
     }
 
-  
-    function newfeeRate(uint256 _feeRate) external onlyOwner(){
-        feeRate = _feeRate;
-    }
-
     modifier onlyWallet() {
         require(! ( msg.sender.code.length > 0), "LuckyFi: contracts are not allowed.");
         _;
@@ -383,5 +371,16 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
 
     function setStakingMaxId(uint256 _stakingMaxId) external onlyOwner {
         stakingMaxId = _stakingMaxId;
+    }
+
+    function upgradeLinkNft(uint256 _tokenId, uint256 _timestamp, address oldLuckyFi) external onlyOwner{
+        require(!luckyNfts[_tokenId].isLink, "LuckyFi: nft has been linked.");
+        (bool _isLink, uint256 _level, uint256 _rarity, ) =  ILuckFi(oldLuckyFi).nftInfo(_tokenId);
+        luckyNfts[_tokenId].level = _level;
+        luckyNfts[_tokenId].rarity = _rarity;
+        luckyNfts[_tokenId].linkTime = _timestamp;
+        luckyNfts[_tokenId].isLink = _isLink;
+        luckyNfts[_tokenId].realOwner = nft.ownerOf(_tokenId);
+        emit LinkNftEvent(_tokenId, luckyNfts[_tokenId].realOwner);
     }
 }

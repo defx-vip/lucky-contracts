@@ -127,7 +127,7 @@ contract NewLuckyFi is IERC721Receiver, Ownable  {
     function _linkNft(uint256 _tokenId) internal {
         luckyNfts[_tokenId].level = 1;
         luckyNfts[_tokenId].rarity = nft.showRarity(_tokenId);
-        luckyNfts[_tokenId].startTime = nft.nftStartTime(_tokenId);
+        luckyNfts[_tokenId].startTime = block.timestamp;
         luckyNfts[_tokenId].isLink = true;
         luckyNfts[_tokenId].realOwner = msg.sender;
     }

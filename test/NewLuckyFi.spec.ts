@@ -72,23 +72,25 @@ describe("NewLuckyFi", () => {
         await nft.safeMint(user1.address, 1)
         await nft.safeMint(user1.address, 3)
         await fi.batchLinkNft()
-      
-
         await nft.safeMint(user2.address, 2)
         await fi.connect(user2).batchLinkNft()
-
         await fi.depositeNft(1)
         await fi.depositeNft(3)
         await fi.connect(user2).depositeNft(2)
 
         expect(await fi.totalHashToken()).to.be.equal(ten.pow(8).mul(3))
-        let now = parseInt((new Date().getTime() / 1000) + "")
-        let l = now + 10
-        while(now <= l) {
-            now = parseInt((new Date().getTime() / 1000) + "")
-        }
-        await nft.safeMint(user2.address,  100)
+
         console.info(await fi.showExpBonus())
         console.info(await fi.connect(user2).showExpBonus())
     })
+
+    // it("test upgradeLinkNft", async () => {
+    //     await nft.safeMint(user1.address, 1)
+    //     let weeksAge4 = Math.floor(new Date().getTime()/1000) - 60 * 60 *24 * 7 * 4 - 6
+    //     await fi.upgradeLinkNft(1, weeksAge4, )
+    //     await fi.depositeNft(1)
+        
+    //     expect(await fi.hashFactor(1)).to.be.equal(ten.pow(7).mul(5))
+    //     expect(await fi.totalHashToken()).to.be.equal(ten.pow(7).mul(5))
+    // })
 })

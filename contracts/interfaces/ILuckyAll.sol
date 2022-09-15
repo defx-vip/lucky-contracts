@@ -15,7 +15,7 @@ interface INft {
     function ownerOf(uint256 tokenId) external returns (address);
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function showRarity(uint256 _tokenId) external view returns (uint256);
-    function nftStartTime(uint256 _tokenId) external view returns (uint256);
+   
 }
 
 interface ILmt {
@@ -24,4 +24,8 @@ interface ILmt {
     function transferFrom(address from, address to, uint256 amount) external;
     function transfer(address to, uint256 amount) external;
     function approve(address spender, uint256 amount) external;
+}
+
+interface ILuckFi {
+    function nftInfo(uint256 _tokenId) external view returns (bool _isLink, uint256 _level, uint256 _rarity, bool _isDepos);
 }
