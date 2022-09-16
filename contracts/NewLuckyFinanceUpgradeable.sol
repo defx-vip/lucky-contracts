@@ -200,7 +200,7 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         uint256 _bonus = userHashRatio(msg.sender) * totalBonusToday() / UNIT;
         require(_bonus != 0, "LuckyFi: bonus is zero");
         _getBonus(msg.sender, _bonus);
-        updateUserPower(msg.sender);
+        //updateUserPower(msg.sender);
     }
 
 
@@ -273,8 +273,10 @@ contract NewLuckyFinanceUpgradeable is IERC721ReceiverUpgradeable, OwnableUpgrad
         for (uint256 i = 0; i < _ids.length; i++) {
            uint256 _id = _ids[i];
            uint256 power = hashFactor(_id);
-           totalHashToken = totalHashToken.sub(luckyNfts[_id].lastHash).add(power);
-           luckyNfts[_id].lastHash = power;
+           if (luckyNfts[_id].lastHash != power) {
+            totalHashToken = totalHashToken.sub(luckyNfts[_id].lastHash).add(power);
+            luckyNfts[_id].lastHash = power;
+           }
         }
     }
 

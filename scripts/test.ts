@@ -1,9 +1,9 @@
 import {ethers, upgrades } from 'hardhat'
 import {LuckyMetaToken} from '../typechain/LuckyMetaToken'
 async function main() {
-    const LuckyMetaToken = await ethers.getContractFactory('LuckyMetaToken')
-    const lmt = LuckyMetaToken.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3") as LuckyMetaToken
-    console.log(await lmt.balanceOf("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"))
+    const LuckyMetaToken = await ethers.getContractFactory('NewLuckyFinanceUpgradeable')
+    const lmt = LuckyMetaToken.attach("0xB52EDb80B726a09447EEff2cfCDbCE7d7466442c") as LuckyMetaToken
+    console.log(await lmt.users("0x18025093f8ad587bfD372305902142c594c7A15D"))
 }
 
 main()
